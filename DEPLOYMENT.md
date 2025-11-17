@@ -2,23 +2,69 @@
 
 ## 快速部署
 
-### 1. 作为 Claude Skill 使用
+### 1. 作为 Claude Code Skill 使用
 
-将 `SKILL.md` 文件上传到 Claude.ai：
+#### 个人 Skill 安装（推荐）
 
-1. 打开 Claude.ai
-2. 进入 Skills 设置
-3. 点击"上传技能"
-4. 选择 `SKILL.md` 文件
-5. 确认并启用技能
+适合个人在所有项目中使用此技能：
 
-**使用示例**：
+```bash
+# 方法 A：直接克隆到 skills 目录
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git \
+    ~/.claude/skills/git-sync-checker-enhanced
+
+# 方法 B：如果已下载，复制整个目录
+cp -r /path/to/git-sync-checker-enhanced ~/.claude/skills/
+
+# 验证安装
+ls -la ~/.claude/skills/git-sync-checker-enhanced/
+```
+
+**文件结构验证**：
+```
+~/.claude/skills/git-sync-checker-enhanced/
+├── SKILL.md              # ✅ 必需
+├── examples.md           # ✅ 建议
+├── reference.md          # ✅ 建议
+├── README.md
+├── batch-checker.sh      # ✅ 脚本工具
+├── conflict-predictor.sh # ✅ 脚本工具
+└── gitignore-checker.sh  # ✅ 脚本工具
+```
+
+#### 项目 Skill 安装
+
+适合团队项目共享此技能：
+
+```bash
+# 在项目根目录
+cd /path/to/your/project
+
+# 克隆到项目 skills 目录
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git \
+    .claude/skills/git-sync-checker-enhanced
+
+# 提交到版本控制
+git add .claude/skills/git-sync-checker-enhanced
+git commit -m "feat: 添加 Git 同步检查 Skill"
+git push
+```
+
+团队成员执行 `git pull` 后会自动获得此 Skill。
+
+#### 验证 Skill 加载
+
+安装后，在 Claude Code 中测试触发词：
+
 ```
 检查同步状态
 准备下班
 开始工作
 检查所有项目
+我要合并代码，会有冲突吗？
 ```
+
+如果 Claude Code 开始执行相应操作，说明 Skill 已成功加载！
 
 ### 2. 作为命令行工具使用
 
@@ -501,8 +547,217 @@ echo "✅ 更新完成"
 3. 查看 GitHub Issues
 4. 联系技术支持
 
+## 分享和发布
+
+### 方式 1：通过 Git 仓库分享（当前方式）
+
+这是最简单的分享方式，适合团队内部或开源项目：
+
+#### 作为个人 Skill 分享
+
+用户可以直接从 GitHub 安装：
+
+```bash
+# 其他用户安装
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git \
+    ~/.claude/skills/git-sync-checker-enhanced
+```
+
+#### 作为项目 Skill 分享
+
+将 Skill 包含在项目中：
+
+```bash
+# 项目维护者
+cd your-project
+git submodule add https://github.com/alongor666/git-sync-checker-enhanced.git \
+    .claude/skills/git-sync-checker-enhanced
+
+# 或者直接复制并提交
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git \
+    .claude/skills/git-sync-checker-enhanced
+rm -rf .claude/skills/git-sync-checker-enhanced/.git
+git add .claude/skills/git-sync-checker-enhanced
+git commit -m "feat: 添加 Git 同步检查 Skill"
+git push
+```
+
+**优点**：
+- ✅ 简单直接，无需额外工具
+- ✅ 版本控制友好
+- ✅ 团队成员自动获取更新
+- ✅ 开源社区易于贡献
+
+**缺点**：
+- ⚠️ 需要手动更新
+- ⚠️ 无中心化的市场发现机制
+
+### 方式 2：通过 Claude Code 插件分享（未来）
+
+> **注意**：目前 Claude Code 暂无官方插件市场。以下是未来可能的分发方式。
+
+当 Claude Code 插件生态成熟后，可以：
+
+1. **创建插件项目**：
+```
+my-plugin/
+├── plugin.json          # 插件元数据
+├── skills/
+│   └── git-sync-checker-enhanced/
+│       ├── SKILL.md
+│       └── ...
+└── README.md
+```
+
+2. **发布到插件市场**（假设未来有）：
+```bash
+# 未来可能的命令
+claude plugin publish my-plugin
+```
+
+3. **用户安装**：
+```bash
+# 未来可能的命令
+claude plugin install git-sync-checker-enhanced
+```
+
+### 方式 3：NPM 包分发（社区方案）
+
+虽然不是官方方式，但可以通过 NPM 分发：
+
+```json
+// package.json
+{
+  "name": "@yourname/claude-skill-git-sync-checker",
+  "version": "2.0.0",
+  "description": "Git Sync Checker Skill for Claude Code",
+  "files": [
+    "SKILL.md",
+    "examples.md",
+    "reference.md",
+    "*.sh"
+  ],
+  "bin": {
+    "install-skill": "./install.sh"
+  }
+}
+```
+
+```bash
+# 发布
+npm publish --access public
+
+# 用户安装
+npx @yourname/claude-skill-git-sync-checker
+```
+
+### 推广 Skill
+
+#### 在 GitHub 优化可发现性
+
+1. **添加主题标签**：
+   - `claude-code`
+   - `claude-skill`
+   - `git-tools`
+   - `developer-tools`
+
+2. **完善 README.md**：
+   - ✅ 清晰的安装说明
+   - ✅ 使用示例
+   - ✅ 截图或演示视频
+   - ✅ 徽章（stars, forks, license）
+
+3. **创建发布**：
+```bash
+# 创建标签
+git tag -a v2.0.0 -m "Release v2.0.0: 优化文档结构"
+git push origin v2.0.0
+
+# 在 GitHub 创建 Release
+# 附上 CHANGELOG.md 内容
+```
+
+#### 在社区分享
+
+1. **Claude 官方社区**（如果有）
+2. **开发者论坛**：
+   - Reddit (r/ClaudeAI, r/devtools)
+   - Hacker News
+   - Dev.to
+3. **社交媒体**：
+   - Twitter/X
+   - LinkedIn
+4. **博客文章**：
+   - 介绍 Skill 的功能
+   - 使用教程
+   - 最佳实践
+
+### 维护和更新
+
+#### 版本管理
+
+使用语义化版本：
+
+```bash
+# 补丁版本（bug 修复）
+git tag v2.0.1
+
+# 次要版本（新功能）
+git tag v2.1.0
+
+# 主要版本（破坏性更改）
+git tag v3.0.0
+```
+
+#### 用户更新
+
+**个人 Skill**：
+```bash
+# 用户手动更新
+cd ~/.claude/skills/git-sync-checker-enhanced
+git pull origin main
+```
+
+**项目 Skill**：
+```bash
+# 团队成员自动获取更新
+git pull
+```
+
+#### 自动更新脚本
+
+为用户提供更新脚本：
+
+```bash
+#!/bin/bash
+# update-skill.sh
+
+SKILL_DIR="$HOME/.claude/skills/git-sync-checker-enhanced"
+
+if [ -d "$SKILL_DIR" ]; then
+    echo "🔄 更新 Git Sync Checker Skill..."
+    cd "$SKILL_DIR"
+    git pull origin main
+    echo "✅ 更新完成！"
+else
+    echo "❌ Skill 未安装，请先运行安装脚本"
+fi
+```
+
+### 收集反馈
+
+1. **GitHub Issues**：收集 bug 报告和功能请求
+2. **GitHub Discussions**：用户交流和问答
+3. **投票功能**：让用户投票选择下一个功能
+4. **使用统计**：
+   - GitHub Stars/Forks
+   - Clone 数量（通过 GitHub API）
+   - 用户反馈和评价
+
 ## 相关资源
 
 - [Git 官方文档](https://git-scm.com/doc)
 - [GitHub Actions](https://docs.github.com/en/actions)
 - [GitLab CI/CD](https://docs.gitlab.com/ee/ci/)
+- [Claude Code 文档](https://code.claude.com/docs)
+- [语义化版本](https://semver.org/lang/zh-CN/)

@@ -23,6 +23,78 @@
 | `conflict-predictor.sh` | 运行冲突预测算法 | [本文 - 实用脚本](#脚本-1-conflict-predictorsh) |
 | `gitignore-checker.sh` | 检查和优化 .gitignore | [本文 - 实用脚本](#脚本-3-gitignore-checkersh) |
 
+## 📦 安装
+
+### 方式 1：个人 Skill（推荐）
+
+适合个人在所有项目中使用：
+
+```bash
+# 创建个人 skills 目录
+mkdir -p ~/.claude/skills/git-sync-checker-enhanced
+
+# 克隆或复制项目到 skills 目录
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git ~/.claude/skills/git-sync-checker-enhanced
+
+# 或者如果已下载，直接复制
+cp -r git-sync-checker-enhanced ~/.claude/skills/
+```
+
+安装后，Claude Code 会自动发现并加载此 Skill，无需额外配置。
+
+### 方式 2：项目 Skill
+
+适合团队项目共享：
+
+```bash
+# 在你的项目根目录
+cd /path/to/your/project
+
+# 创建项目 skills 目录
+mkdir -p .claude/skills/git-sync-checker-enhanced
+
+# 克隆或复制
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git .claude/skills/git-sync-checker-enhanced
+
+# 提交到 Git，团队成员会自动获取
+git add .claude/skills/git-sync-checker-enhanced
+git commit -m "Add git sync checker skill"
+git push
+```
+
+团队成员执行 `git pull` 后会自动获得此 Skill。
+
+### 方式 3：命令行工具（不使用 Claude Code）
+
+仅使用脚本工具：
+
+```bash
+# 创建工具目录
+mkdir -p ~/bin/git-sync-tools
+
+# 复制脚本
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git /tmp/git-sync
+cp /tmp/git-sync/*.sh ~/bin/git-sync-tools/
+chmod +x ~/bin/git-sync-tools/*.sh
+
+# 添加到 PATH
+echo 'export PATH="$HOME/bin/git-sync-tools:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+完整部署选项请参考 [DEPLOYMENT.md](DEPLOYMENT.md)。
+
+### 验证安装
+
+安装后，在 Claude Code 中测试：
+
+```bash
+# 在任何 Git 仓库目录中
+检查同步状态
+```
+
+如果看到 Claude 开始检查仓库状态，说明安装成功！
+
 ## 快速开始
 
 ### 基础检查
