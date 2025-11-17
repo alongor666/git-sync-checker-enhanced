@@ -1,5 +1,28 @@
 # Git Sync Checker Enhanced - 使用指南
 
+一个智能的 Git 同步状态检查工具，支持多分支、多仓库、批量检查，提供 AI 驱动的冲突预测和智能建议。
+
+## 📁 文档结构
+
+本项目采用模块化文档结构，便于快速查找和学习：
+
+| 文件 | 用途 | 适合 |
+|------|------|------|
+| **[SKILL.md](SKILL.md)** | 核心指令和快速参考（327行） | Claude Code 技能文件，包含执行流程和命令 |
+| **[examples.md](examples.md)** | 6个详细使用场景示例 | 想了解实际使用案例的开发者 |
+| **[reference.md](reference.md)** | 高级功能和算法详解 | 需要深入了解技术细节的用户 |
+| **README.md** | 本文件，快速上手指南 | 初次使用者 |
+| **[DEPLOYMENT.md](DEPLOYMENT.md)** | 安装和部署说明 | 想要安装此技能的用户 |
+| **[CHANGELOG.md](CHANGELOG.md)** | 版本历史和更新日志 | 关注项目演进的用户 |
+
+### 可用脚本
+
+| 脚本 | 功能 | 文档位置 |
+|------|------|---------|
+| `batch-checker.sh` | 批量检查多个仓库 | [本文 - 实用脚本](#脚本-2-batch-checkersh) |
+| `conflict-predictor.sh` | 运行冲突预测算法 | [本文 - 实用脚本](#脚本-1-conflict-predictorsh) |
+| `gitignore-checker.sh` | 检查和优化 .gitignore | [本文 - 实用脚本](#脚本-3-gitignore-checkersh) |
+
 ## 快速开始
 
 ### 基础检查
