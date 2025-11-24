@@ -1,6 +1,6 @@
 ---
 name: git-sync-checker-enhanced
-description: 智能检查本地代码与远程仓库的同步状态，支持多分支、多仓库、批量检查，提供AI驱动的冲突预测和智能建议。当用户提到'检查同步状态'、'Git同步'、'推送代码'、'pull代码'、'下班前检查'、'准备下班'、'拉取最新代码'、'批量检查仓库'、'git status'、'冲突预测'、'gitignore优化'或需要Git状态分析时自动使用此技能。
+description: Git 仓库同步状态检查工具。检查本地与远程仓库的同步状态、预测潜在冲突、检测敏感文件和大文件。当用户提到"检查同步状态"、"检查冲突"、"批量检查仓库"、"检查 gitignore"或类似的 Git 状态分析需求时使用此技能。
 allowed-tools: Bash, Read, Grep
 ---
 
@@ -8,319 +8,309 @@ allowed-tools: Bash, Read, Grep
 
 ## 核心职责
 
-本技能是增强版的 Git 同步状态检查工具，提供智能分析和情境感知的操作建议。
+提供 Git 仓库状态检查和冲突预测功能。
 
 **核心功能**：
+- ✅ 检查本地与远程的同步状态
+- ✅ 预测合并或拉取时的潜在冲突
+- ✅ 批量检查多个仓库
+- ✅ 检测敏感文件和大文件
+- ❌ 不自动执行任何 Git 操作（只检查不修改）
 
-- ✅ 自动检测分支和远程仓库配置
-- ✅ 支持单个或批量检查多个仓库
-- ✅ AI 驱动的冲突预测和风险评估
-- ✅ 智能 .gitignore 检查和优化建议
-- ✅ 项目类型感知的个性化建议
-- ✅ 生成详细的同步报告（支持多种格式）
-- ❌ 不自动执行危险操作（需用户确认）
+## 可用脚本
 
-## 可用工具脚本
+项目包含三个 Shell 脚本：
 
-本技能包含三个辅助脚本，可在需要时调用：
+1. **conflict-predictor.sh** - 冲突预测
+   - 检测本地和远程是否修改了相同的文件
+   - 根据共同修改文件数量判断风险级别
+   - 提供合并建议
 
-1. **batch-checker.sh** - 批量检查多个仓库
-   ```bash
-   bash batch-checker.sh /path/to/projects
-   ```
+2. **batch-checker.sh** - 批量检查
+   - 扫描目录下的所有 Git 仓库
+   - 显示每个仓库的同步状态
+   - 支持 JSON 输出
 
-2. **conflict-predictor.sh** - 运行冲突预测算法
-   ```bash
-   bash conflict-predictor.sh
-   ```
+3. **gitignore-checker.sh** - 配置检查
+   - 检测已提交的敏感文件（.env、密钥等）
+   - 检测大文件（>5MB）
+   - 检查常见问题文件（node_modules等）
 
-3. **gitignore-checker.sh** - 检查和优化 .gitignore
-   ```bash
-   bash gitignore-checker.sh
-   ```
+## 使用场景
 
-## 执行流程
+### 场景 1: 合并前检查冲突
 
-### 阶段 1：环境检测与配置识别
+**用户可能说**：
+- "我要合并最新代码，会有冲突吗？"
+- "检查一下合并风险"
+- "pull 代码会有问题吗？"
 
-#### 1.1 检测仓库信息
+**执行步骤**：
+
+1. 确认当前在 Git 仓库中
+2. 运行冲突预测脚本：
 
 ```bash
-# 获取当前分支
-CURRENT_BRANCH=$(git branch --show-current)
-
-# 获取远程仓库名称
-REMOTE_NAME=$(git remote | head -n 1)
-
-# 获取远程 URL
-git remote -v
-
-# 检测上游分支
-git rev-parse --abbrev-ref @{upstream} 2>/dev/null
+bash conflict-predictor.sh
 ```
 
-**识别内容**：
-- 当前分支名
-- 远程仓库名（origin/upstream/其他）
-- 是否有上游分支配置
-- 远程仓库类型（GitHub/GitLab/Bitbucket/自建）
+3. 解释输出结果：
+   - **低风险**：本地和远程没有修改相同文件，可以安全合并
+   - **中等风险**：有1-3个文件被双方修改，可能需要手动解决冲突
+   - **高风险**：有多个文件被双方修改，很可能遇到冲突
 
-#### 1.2 检测项目类型
+4. 如果有冲突文件，列出具体的文件名
+
+5. 提供建议的操作步骤（脚本会自动输出）
+
+**注意事项**：
+- 这是基于文件级别的检测，即使修改了同一文件也可能不冲突（如果修改的代码行不重叠）
+- 这是一个有用的参考，但不是100%准确的预测
+
+### 场景 2: 检查当前仓库状态
+
+**用户可能说**：
+- "检查同步状态"
+- "查看 Git 状态"
+- "准备下班，检查一下代码"
+
+**执行步骤**：
+
+1. 使用 Bash 工具运行标准 Git 命令：
 
 ```bash
-# 检查项目配置文件
-ls -la | grep -E "package.json|requirements.txt|go.mod|Cargo.toml|pom.xml|build.gradle"
+# 检查工作区状态
+git status
 
-# 检查框架标识
-[ -f "package.json" ] && cat package.json | grep -E "react|vue|angular|next|nuxt"
+# 获取远程更新（不拉取）
+git fetch --all
+
+# 检查本地领先/落后的提交数
+git rev-list --left-right --count HEAD...@{u}
 ```
 
-**识别项目类型**：
-- 前端（React/Vue/Angular）
-- 后端（Node/Python/Go/Java）
-- 全栈（Next.js/Nuxt）
-- 移动端（React Native/Flutter）
+2. 解释输出：
+   - 工作区是否干净
+   - 有多少未推送的提交
+   - 有多少未拉取的提交
 
-### 阶段 2：状态检查与分析
+3. 如果用户关心冲突，运行 conflict-predictor.sh
 
-#### 2.1 工作区状态
+### 场景 3: 批量检查多个仓库
 
-```bash
-# 详细状态
-git status --porcelain
+**用户可能说**：
+- "检查 ~/projects 下所有仓库"
+- "批量检查项目状态"
+- "看看所有项目的同步情况"
 
-# 未跟踪文件
-git ls-files --others --exclude-standard
+**执行步骤**：
 
-# 已修改但未暂存
-git diff --name-only
-
-# 已暂存但未提交
-git diff --cached --name-only
-```
-
-#### 2.2 本地与远程对比
+1. 确认目录路径
+2. 运行批量检查脚本：
 
 ```bash
-# 获取远程更新（不拉取代码）
-git fetch $REMOTE_NAME
-
-# 本地领先的提交
-git log $REMOTE_NAME/$CURRENT_BRANCH..$CURRENT_BRANCH --oneline
-
-# 远程领先的提交
-git log $CURRENT_BRANCH..$REMOTE_NAME/$CURRENT_BRANCH --oneline
-
-# 检查分叉
-git rev-list --left-right --count $CURRENT_BRANCH...$REMOTE_NAME/$CURRENT_BRANCH
-```
-
-#### 2.3 智能冲突预测
-
-使用 `conflict-predictor.sh` 脚本或执行以下命令：
-
-```bash
-# 获取本地和远程修改的文件列表
-LOCAL_FILES=$(git diff --name-only $REMOTE_NAME/$CURRENT_BRANCH..$CURRENT_BRANCH)
-REMOTE_FILES=$(git diff --name-only $CURRENT_BRANCH..$REMOTE_NAME/$CURRENT_BRANCH)
-
-# 找出可能冲突的文件（两边都修改了）
-echo "$LOCAL_FILES" | sort > /tmp/local_files
-echo "$REMOTE_FILES" | sort > /tmp/remote_files
-comm -12 /tmp/local_files /tmp/remote_files
-```
-
-**冲突风险评级**：
-- 🟢 低风险：无共同修改文件
-- 🟡 中风险：1-3 个共同修改文件
-- 🔴 高风险：>3 个共同修改文件或关键文件冲突
-
-### 阶段 3：.gitignore 检查
-
-使用 `gitignore-checker.sh` 脚本或执行：
-
-```bash
-# 检查是否有不该提交的文件
-git status --porcelain | grep -E "\.env|\.key|\.pem|node_modules|\.DS_Store|\.vscode"
-```
-
-根据项目类型推荐 .gitignore 规则（详见 reference.md）。
-
-### 阶段 4：批量检查支持
-
-使用 `batch-checker.sh` 脚本批量检查多个仓库：
-
-```bash
-# 扫描指定目录下的所有 Git 仓库
 bash batch-checker.sh ~/projects
 ```
 
-**批量检查输出示例**：
-```
-📦 批量检查结果 (3 个仓库)
+3. 解释输出：
+   - 总共找到多少个仓库
+   - 每个仓库的状态（✅已同步、⚠️需要同步、🔴需要处理）
+   - 图标含义：
+     - ↑N = N个未推送的提交
+     - ↓N = N个未拉取的提交
+     - +N = N个未提交的文件
 
-✅ project-a: 已同步
-⚠️ project-b: 2 个未推送提交
-🔴 project-c: 有未提交修改 + 远程领先
-```
+4. 如果有问题，建议用户优先处理标记为🔴的仓库
 
-### 阶段 5：智能报告生成
+**可选参数**：
+```bash
+# 指定搜索深度（默认3）
+bash batch-checker.sh ~/projects 2
 
-#### 标准报告格式
-
-```markdown
-# Git 同步状态报告
-生成时间: 2025-11-17 14:30:00
-
-## 📊 基本信息
-- 仓库: my-project
-- 分支: feature/new-feature
-- 远程: origin (github.com)
-- 项目类型: React 前端项目
-
-## 🔍 状态概览
-- 工作区: 3 个文件有修改
-- 暂存区: 1 个文件已暂存
-- 本地提交: 2 个未推送
-- 远程更新: 0 个未拉取
-
-## ⚠️ 风险评估
-- 冲突风险: 🟢 低风险
-- 敏感文件: ⚠️ 发现 .env 文件未忽略
-
-## 💡 操作建议
-1. 添加 .env 到 .gitignore
-2. 提交当前修改
-3. 推送到远程
-
-## 📝 详细命令
-\`\`\`bash
-echo ".env" >> .gitignore
-git add .gitignore src/
-git commit -m "feat: 完成新功能"
-git push origin feature/new-feature
-\`\`\`
+# JSON 输出（供脚本使用）
+bash batch-checker.sh ~/projects 3 json
 ```
 
-#### 简洁模式（适合快速查看）
+### 场景 4: 检查 .gitignore 配置
 
+**用户可能说**：
+- "检查 gitignore"
+- "有没有不该提交的文件"
+- "检查敏感文件"
+
+**执行步骤**：
+
+1. 运行 gitignore 检查脚本：
+
+```bash
+bash gitignore-checker.sh
 ```
-✅ main | ↑2 | 干净
-⚠️ feature | ↑1 ↓3 | 2 个修改
-🔴 hotfix | ↑0 ↓1 | 有冲突
-```
 
-### 阶段 6：情境感知建议
+2. 解释输出：
+   - 敏感文件：.env、密钥文件等
+   - 大文件：超过5MB的文件
+   - 常见问题：node_modules、__pycache__等
 
-#### 时间感知
+3. 如果发现问题，提供清理步骤：
+   - 从 Git 移除但保留本地文件：`git rm --cached <文件>`
+   - 添加到 .gitignore
+   - 提交修改
 
-根据当前时间提供不同优先级建议：
+4. 提醒用户：文件仍在 Git 历史中，如需彻底清除需要使用 git filter-branch 或 BFG Repo-Cleaner
 
-- **下班前（17:00-19:00）**：优先检查"推送代码"、"清理工作区"
-- **上班后（9:00-11:00）**：优先检查"拉取更新"、"检查依赖"
-- **其他时间**：常规检查
-
-#### 项目类型感知
-
-**前端项目**：
-- 检查 node_modules 是否被忽略
-- 提醒运行 `npm install` 或 `pnpm install`
-- 建议检查 package-lock.json 冲突
-
-**后端项目**：
-- 检查虚拟环境是否被忽略
-- 提醒运行数据库迁移
-- 建议检查 API 版本兼容性
-
-**全栈项目**：
-- 检查前后端同步状态
-- 提醒环境变量配置
-- 建议测试端到端功能
-
-## 使用场景快速参考
-
-| 场景 | 触发词示例 | 重点检查 |
-|------|-----------|---------|
-| 下班前检查 | "准备下班"、"检查同步" | 所有修改已提交、已推送 |
-| 上班后检查 | "开始工作"、"拉取最新代码" | 拉取远程更新、检查依赖 |
-| 批量检查 | "检查所有项目" | 多仓库状态概览 |
-| 冲突预测 | "会有冲突吗" | 分析共同修改文件 |
-| .gitignore 优化 | "检查 gitignore" | 敏感文件、项目规则 |
-
-## 安全限制与边界
+## 执行原则
 
 ### 安全限制
-- ❌ 永不执行强制推送（`--force`）
-- ❌ 永不修改已推送的提交历史
-- ❌ 永不自动删除分支
-- ⚠️ 危险操作必须明确警告
 
-### 功能边界
-- ✅ 只检查和建议，不自动执行修改操作
-- ✅ 所有 Git 命令需用户手动确认
-- ✅ 冲突解决提供方案，不自动处理
-- ✅ 敏感信息检测后立即警告
+- ❌ 永不执行任何修改 Git 仓库的命令
+- ❌ 永不自动推送或拉取代码
+- ❌ 永不删除分支或重置提交
+- ✅ 只执行只读的检查命令
+- ✅ 所有建议的操作都需要用户手动执行
 
-### 性能考虑
-- 批量检查时限制仓库数量（建议 ≤20）
-- 大仓库检查时显示进度
-- 超时保护（单个仓库检查 <30 秒）
+### 输出原则
 
-## 报告格式选项
+1. **简洁明了**：直接告诉用户状态和风险
+2. **提供上下文**：解释为什么有风险
+3. **具体建议**：提供可执行的命令
+4. **诚实透明**：说明检测的局限性
 
-用户可以指定报告格式：
+### 错误处理
+
+如果脚本执行失败：
+
+1. 检查是否在 Git 仓库中：`git rev-parse --git-dir`
+2. 检查脚本是否有执行权限：`chmod +x *.sh`
+3. 检查 Git 是否已安装：`git --version`
+4. 向用户报告具体的错误信息
+
+## 输出示例
+
+### 冲突检测输出
 
 ```
-# 默认格式（带颜色的终端输出）
-检查同步状态
+🔍 Git 冲突检查
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+分支: feature/new-ui
+远程: origin
 
-# Markdown 报告
-检查同步状态，生成 markdown 报告
+📊 状态概览
+本地修改文件: 5 个
+远程修改文件: 3 个
+共同修改文件: 2 个
 
-# JSON 格式（供脚本使用）
-检查同步状态，输出 json
+⚠️  中等风险
+本地和远程修改了相同的文件，可能需要手动解决冲突。
 
-# HTML 报告（可在浏览器查看）
-检查同步状态，生成 html 报告
+⚠️  可能冲突的文件：
+  • src/components/Header.tsx
+  • package.json
+
+建议操作：
+# 1. 备份当前分支
+git branch backup-20251125-1430
+
+# 2. 拉取并合并
+git pull origin feature/new-ui
+
+# 3. 如遇冲突，手动解决后：
+git add <已解决的文件>
+git commit
 ```
+
+### 批量检查输出
+
+```
+🔍 Git 仓库批量检查
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+搜索目录: /Users/you/projects
+最大深度: 3
+
+找到 5 个仓库
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅  project-a                  (main)
+⚠️  project-b                  (dev)                 ↑2
+🔴  project-c                  (feature/auth)        +3
+✅  project-d                  (main)
+⚠️  project-e                  (main)                ↓1
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 检查完成
+
+总计: 5 个仓库
+✅ 已同步: 2
+⚠️  需要同步: 2
+🔴 需要立即处理: 1
+```
+
+## 常见问题
+
+### Q: 脚本找不到或无法执行？
+
+检查脚本路径和权限：
+
+```bash
+# 查找脚本位置
+find ~/.claude/skills -name "*.sh"
+
+# 添加执行权限
+chmod +x ~/.claude/skills/git-sync-checker-enhanced/*.sh
+
+# 测试执行
+bash ~/.claude/skills/git-sync-checker-enhanced/conflict-predictor.sh
+```
+
+### Q: 脚本显示"未找到远程仓库"？
+
+检查远程配置：
+
+```bash
+git remote -v
+```
+
+如果没有远程仓库，脚本会提示用户添加。
+
+### Q: 批量检查很慢？
+
+对于大量仓库，可以：
+1. 减少搜索深度
+2. 缩小搜索范围
+3. 每个仓库有30秒超时保护
+
+## 技术说明
+
+### 冲突预测算法
+
+1. 找共同祖先：`git merge-base HEAD REMOTE/BRANCH`
+2. 列出本地修改：`git diff --name-only BASE HEAD`
+3. 列出远程修改：`git diff --name-only BASE REMOTE`
+4. 找交集：`comm -12 <(local_files) <(remote_files)`
+5. 判断风险：0个=低，1-3个=中，>3个=高
+
+**局限性**：
+- 只检测文件级别，不检测行级别
+- 不考虑文件类型和重要性
+- 不考虑开发者经验
+
+### 批量检查流程
+
+1. 使用 `find` 搜索 `.git` 目录
+2. 对每个仓库执行：
+   - `git status --porcelain` 检查工作区
+   - `git fetch` 获取远程更新
+   - `git rev-list --count` 计算提交差异
+3. 汇总结果并输出
+
+### 敏感文件检测
+
+使用正则表达式匹配常见模式：
+- 环境变量：`\.env$`、`\.env\.local$`
+- 密钥文件：`.*\.key$`、`.*\.pem$`
+- SSH密钥：`id_rsa`、`id_dsa`
+- 配置文件：`database\.yml`、`secrets\.yml`
 
 ## 参考文档
 
-- **examples.md** - 6个详细使用场景示例
-- **reference.md** - 高级功能、算法详解和完整 .gitignore 规则
-- **DEPLOYMENT.md** - 部署和安装指南
-- **CHANGELOG.md** - 版本历史
-
-## 快速示例
-
-### 示例 1：基本检查
-
-**用户输入**：检查同步状态
-
-**执行**：
-1. 检测当前分支和远程仓库
-2. 对比本地与远程提交
-3. 生成状态报告
-4. 提供操作建议
-
-### 示例 2：冲突预测
-
-**用户输入**：我要合并最新代码，会有冲突吗？
-
-**执行**：
-1. 运行 `conflict-predictor.sh`
-2. 分析共同修改文件
-3. 计算冲突风险评分
-4. 提供安全合并步骤
-
-### 示例 3：批量检查
-
-**用户输入**：检查 ~/projects 下所有仓库
-
-**执行**：
-1. 运行 `batch-checker.sh ~/projects`
-2. 扫描所有 Git 仓库
-3. 生成批量报告
-4. 突出显示需要处理的项目
-
-完整示例请参考 examples.md 文件。
+- 完整使用说明：[README.md](README.md)
+- 改进提案：[IMPROVEMENT_PROPOSAL.md](IMPROVEMENT_PROPOSAL.md)

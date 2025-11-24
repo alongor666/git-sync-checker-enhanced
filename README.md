@@ -1,331 +1,112 @@
-# Git Sync Checker Enhanced - 使用指南
+# Git Sync Checker
 
-一个智能的 Git 同步状态检查工具，支持多分支、多仓库、批量检查，提供 AI 驱动的冲突预测和智能建议。
+一套简单实用的 Shell 脚本工具，用于检查 Git 仓库的同步状态、预测潜在冲突和检查配置问题。
 
-## 📁 文档结构
+## 功能特点
 
-本项目采用模块化文档结构，便于快速查找和学习：
-
-| 文件 | 用途 | 适合 |
-|------|------|------|
-| **[SKILL.md](SKILL.md)** | 核心指令和快速参考（327行） | Claude Code 技能文件，包含执行流程和命令 |
-| **[examples.md](examples.md)** | 6个详细使用场景示例 | 想了解实际使用案例的开发者 |
-| **[reference.md](reference.md)** | 高级功能和算法详解 | 需要深入了解技术细节的用户 |
-| **README.md** | 本文件，快速上手指南 | 初次使用者 |
-| **[DEPLOYMENT.md](DEPLOYMENT.md)** | 安装和部署说明 | 想要安装此技能的用户 |
-| **[CHANGELOG.md](CHANGELOG.md)** | 版本历史和更新日志 | 关注项目演进的用户 |
-
-### 可用脚本
-
-| 脚本 | 功能 | 文档位置 |
-|------|------|---------|
-| `batch-checker.sh` | 批量检查多个仓库 | [本文 - 实用脚本](#脚本-2-batch-checkersh) |
-| `conflict-predictor.sh` | 运行冲突预测算法 | [本文 - 实用脚本](#脚本-1-conflict-predictorsh) |
-| `gitignore-checker.sh` | 检查和优化 .gitignore | [本文 - 实用脚本](#脚本-3-gitignore-checkersh) |
-
-## 📦 安装
-
-### 方式 1：个人 Skill（推荐）
-
-适合个人在所有项目中使用：
-
-```bash
-# 创建个人 skills 目录
-mkdir -p ~/.claude/skills/git-sync-checker-enhanced
-
-# 克隆或复制项目到 skills 目录
-git clone https://github.com/alongor666/git-sync-checker-enhanced.git ~/.claude/skills/git-sync-checker-enhanced
-
-# 或者如果已下载，直接复制
-cp -r git-sync-checker-enhanced ~/.claude/skills/
-```
-
-安装后，Claude Code 会自动发现并加载此 Skill，无需额外配置。
-
-### 方式 2：项目 Skill
-
-适合团队项目共享：
-
-```bash
-# 在你的项目根目录
-cd /path/to/your/project
-
-# 创建项目 skills 目录
-mkdir -p .claude/skills/git-sync-checker-enhanced
-
-# 克隆或复制
-git clone https://github.com/alongor666/git-sync-checker-enhanced.git .claude/skills/git-sync-checker-enhanced
-
-# 提交到 Git，团队成员会自动获取
-git add .claude/skills/git-sync-checker-enhanced
-git commit -m "Add git sync checker skill"
-git push
-```
-
-团队成员执行 `git pull` 后会自动获得此 Skill。
-
-### 方式 3：命令行工具（不使用 Claude Code）
-
-仅使用脚本工具：
-
-```bash
-# 创建工具目录
-mkdir -p ~/bin/git-sync-tools
-
-# 复制脚本
-git clone https://github.com/alongor666/git-sync-checker-enhanced.git /tmp/git-sync
-cp /tmp/git-sync/*.sh ~/bin/git-sync-tools/
-chmod +x ~/bin/git-sync-tools/*.sh
-
-# 添加到 PATH
-echo 'export PATH="$HOME/bin/git-sync-tools:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-完整部署选项请参考 [DEPLOYMENT.md](DEPLOYMENT.md)。
-
-### 验证安装
-
-安装后，在 Claude Code 中测试：
-
-```bash
-# 在任何 Git 仓库目录中
-检查同步状态
-```
-
-如果看到 Claude 开始检查仓库状态，说明安装成功！
+- ✅ **冲突检测**: 在合并前检测可能冲突的文件
+- ✅ **批量检查**: 一次检查多个 Git 仓库的状态
+- ✅ **敏感文件扫描**: 检测已提交的敏感文件（密钥、配置等）
+- ✅ **大文件检测**: 发现不应提交的大文件
+- ✅ **零依赖**: 纯 Bash 实现，只需要 Git
+- ✅ **跨平台**: 支持 macOS 和 Linux
 
 ## 快速开始
 
-### 基础检查
+### 安装
+
+**方式 1: 个人使用（推荐）**
 
 ```bash
-# 检查当前仓库同步状态
-检查同步状态
+# 创建个人 skills 目录
+mkdir -p ~/.claude/skills
 
-# 下班前检查
-准备下班
+# 克隆项目
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git ~/.claude/skills/git-sync-checker-enhanced
 
-# 上班后检查
-开始工作
+# 给脚本添加执行权限
+chmod +x ~/.claude/skills/git-sync-checker-enhanced/*.sh
 ```
 
-### 批量检查
+**方式 2: 项目共享**
 
 ```bash
-# 检查指定目录下所有仓库
-检查 ~/projects 下所有仓库
+# 在项目根目录
+mkdir -p .claude/skills
 
-# 生成 Markdown 报告
-检查所有项目，生成 markdown 报告
+# 克隆项目
+git clone https://github.com/alongor666/git-sync-checker-enhanced.git .claude/skills/git-sync-checker-enhanced
 
-# 生成 JSON 报告
-检查所有项目，输出 json
+# 提交到 Git
+git add .claude/skills/git-sync-checker-enhanced
+git commit -m "Add git sync checker"
 ```
 
-### 冲突预测
+**方式 3: 直接使用脚本**
 
 ```bash
-# 预测合并冲突
-我要合并最新代码，会有冲突吗？
+# 下载脚本
+curl -O https://raw.githubusercontent.com/alongor666/git-sync-checker-enhanced/main/conflict-predictor.sh
+curl -O https://raw.githubusercontent.com/alongor666/git-sync-checker-enhanced/main/batch-checker.sh
+curl -O https://raw.githubusercontent.com/alongor666/git-sync-checker-enhanced/main/gitignore-checker.sh
 
-# 查看冲突详情
-分析一下可能的冲突文件
+# 添加执行权限
+chmod +x *.sh
 ```
 
-### .gitignore 优化
+### 基本使用
+
+#### 1. 检查合并冲突
+
+在合并分支或拉取远程更新前，检查是否有潜在冲突：
 
 ```bash
-# 检查配置
-检查 gitignore 配置
-
-# 检测敏感文件
-检查是否有不该提交的文件
-
-# 生成优化建议
-优化 gitignore
-```
-
-## 进阶用法
-
-### 场景 1：多设备开发工作流
-
-**公司电脑 - 下班前**
-```bash
-# 18:30
-准备下班了，检查一下代码
-
-# Claude 会自动:
-# 1. 检测到下班时间
-# 2. 重点检查未推送代码
-# 3. 验证依赖文件
-# 4. 提醒环境变量同步
-```
-
-**家里电脑 - 开始工作**
-```bash
-# 19:30
-开始工作，拉取最新代码
-
-# Claude 会自动:
-# 1. 检查远程更新
-# 2. 提醒安装依赖
-# 3. 建议运行测试
-# 4. 验证开发环境
-```
-
-### 场景 2：项目切换管理
-
-```bash
-# 查看所有项目状态
-检查 ~/work 目录下所有仓库的同步状态
-
-# 输出示例:
-# 📦 批量检查结果 (5 个仓库)
-# 
-# ✅ project-a (main) - 已同步
-# ⚠️ project-b (dev) - 2 个未推送提交
-# 🔴 project-c (feature) - 有未提交修改
-```
-
-### 场景 3：冲突风险评估
-
-```bash
-# 在合并前评估风险
-git fetch origin
-我要合并 origin/main，会有冲突吗？
-
-# 输出示例:
-# 🔍 冲突风险分析
-# 
-# 风险等级: 🟡 中风险 (65分)
-# 
-# 可能冲突的文件:
-# 1. src/utils/api.ts
-#    - 冲突概率: 75%
-# 2. package.json
-#    - 冲突概率: 40%
-```
-
-## 配置文件示例
-
-### 推荐的 .gitignore（Next.js）
-
-```gitignore
-# 依赖
-node_modules/
-.pnp/
-.yarn/*
-
-# 构建产物
-.next/
-out/
-build/
-
-# 环境变量
-.env
-.env*.local
-.env.production
-
-# 测试
-coverage/
-.nyc_output/
-
-# 日志
-*.log
-npm-debug.log*
-
-# 系统文件
-.DS_Store
-.vscode/
-.idea/
-
-# Vercel
-.vercel/
-```
-
-### 推荐的 .gitignore（Python Django）
-
-```gitignore
-# Python
-__pycache__/
-*.py[cod]
-*.so
-
-# 虚拟环境
-venv/
-env/
-.venv
-
-# Django
-*.log
-db.sqlite3
-/media
-/staticfiles
-local_settings.py
-
-# 测试
-.pytest_cache/
-.coverage
-htmlcov/
-
-# 环境变量
-.env
-.env.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-
-# 系统文件
-.DS_Store
-```
-
-## 实用脚本
-
-### 脚本 1: conflict-predictor.sh
-
-```bash
-# 运行冲突预测
 cd /path/to/your/repo
 bash conflict-predictor.sh
 
+# 指定远程仓库
+bash conflict-predictor.sh upstream
+
 # 输出 JSON 格式
-bash conflict-predictor.sh --json
+bash conflict-predictor.sh origin json
 ```
 
-**输出示例**：
+**示例输出**：
+
 ```
-🔍 正在分析冲突风险...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Git 冲突检查
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 分支: feature/new-ui
 远程: origin
 
-📊 冲突风险评估
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 状态概览
+本地修改文件: 5 个
+远程修改文件: 3 个
 共同修改文件: 2 个
-本地修改行数: 156 行
-远程修改行数: 89 行
-冲突分数: 80 分
 
-🔴 高风险 - 很可能遇到冲突，建议备份
+⚠️  中等风险
+本地和远程修改了相同的文件，可能需要手动解决冲突。
 
-⚠️ 可能冲突的文件:
-  - src/components/Header.tsx
-    本地: 45 行 | 远程: 32 行
-  - src/styles/globals.css
-    本地: 12 行 | 远程: 8 行
+⚠️  可能冲突的文件：
+  • src/components/Header.tsx
+  • package.json
 
-💡 建议操作:
-  # 1. 备份当前分支
-  git branch backup-20251117-1845
-  
-  # 2. 使用交互式 rebase（推荐）
-  git fetch origin
-  git rebase -i origin/feature/new-ui
+建议操作：
+# 1. 备份当前分支
+git branch backup-20251125-1430
+
+# 2. 拉取并合并
+git pull origin feature/new-ui
+
+# 3. 如遇冲突，手动解决后：
+git add <已解决的文件>
+git commit
 ```
 
-### 脚本 2: batch-checker.sh
+#### 2. 批量检查仓库
+
+检查某个目录下所有 Git 仓库的状态：
 
 ```bash
 # 检查当前目录
@@ -334,241 +115,223 @@ bash batch-checker.sh .
 # 检查指定目录
 bash batch-checker.sh ~/projects
 
-# 生成 Markdown 报告
-bash batch-checker.sh ~/projects markdown > report.md
-
-# 生成 JSON 报告
-bash batch-checker.sh ~/projects json > report.json
-```
-
-### 脚本 3: gitignore-checker.sh
-
-```bash
-# 基本检查
-bash gitignore-checker.sh
-
-# 保存报告
-bash gitignore-checker.sh --save-report
-```
-
-## 命令速查表
-
-| 场景 | 触发词示例 | 功能 |
-|------|-----------|------|
-| **日常检查** | "检查同步状态" | 检查当前仓库 |
-| **下班前** | "准备下班" | 重点检查未推送 |
-| **上班后** | "开始工作" | 重点检查远程更新 |
-| **批量检查** | "检查所有项目" | 批量检查多个仓库 |
-| **冲突预测** | "会有冲突吗" | 预测合并冲突 |
-| **配置优化** | "检查 gitignore" | 优化配置文件 |
-| **敏感文件** | "检查敏感文件" | 检测不该提交的文件 |
-
-## 输出格式
-
-### 1. 标准终端输出（带颜色）
-
-```
-📊 Git 同步状态
-
-分支: feature/user-auth
-远程: origin (GitHub)
-
-✅ 工作区干净
-⚠️ 2 个未推送提交
-✅ 远程无更新
-
-💡 建议操作:
-git push origin feature/user-auth
-```
-
-### 2. Markdown 报告
-
-```markdown
-# Git 同步状态报告
-
-生成时间: 2025-11-17 18:30
-
-## 基本信息
-- 仓库: my-project
-- 分支: main
-- 远程: origin
-
-## 状态概览
-- 工作区: 干净
-- 未推送: 2 个提交
-- 未拉取: 0 个提交
-```
-
-### 3. JSON 输出
-
-```json
-{
-  "timestamp": "2025-11-17T18:30:00Z",
-  "repository": "my-project",
-  "branch": "main",
-  "status": {
-    "uncommitted": 0,
-    "unpushed": 2,
-    "unpulled": 0,
-    "conflict_risk": "low"
-  }
-}
-```
-
-## 常见问题
-
-### Q1: 如何处理代码分叉？
-
-```bash
-# 场景：本地和远程都有独有提交
-
-# 方案 1: Rebase（推荐，历史更清晰）
-git fetch origin
-git rebase origin/main
-
-# 方案 2: Merge（保留分支历史）
-git fetch origin
-git merge origin/main
-
-# 方案 3: 如果确定远程代码正确
-git fetch origin
-git reset --hard origin/main  # ⚠️ 会丢失本地修改
-```
-
-### Q2: 如何清理已提交的敏感文件？
-
-```bash
-# 1. 从 Git 移除但保留本地文件
-git rm --cached .env
-
-# 2. 添加到 .gitignore
-echo ".env" >> .gitignore
-
-# 3. 提交修改
-git commit -m "chore: 移除敏感文件"
-
-# 4. 如果已推送，需要清理历史
-git filter-branch --force --index-filter \
-  "git rm --cached --ignore-unmatch .env" \
-  --prune-empty --tag-name-filter cat -- --all
-```
-
-### Q3: 批量检查速度慢？
-
-```bash
 # 限制搜索深度
-find ~/projects -maxdepth 2 -name ".git"
+bash batch-checker.sh ~/projects 2
 
-# 只检查最近修改的仓库
-find ~/projects -name ".git" -mtime -7
+# 输出 JSON 格式
+bash batch-checker.sh ~/projects 3 json
 ```
 
-### Q4: 如何集成到开发工具？
+**示例输出**：
 
-```bash
-# VS Code 任务配置 (.vscode/tasks.json)
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Git Sync Check",
-      "type": "shell",
-      "command": "bash",
-      "args": ["${workspaceFolder}/scripts/conflict-predictor.sh"],
-      "problemMatcher": []
-    }
-  ]
-}
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 Git 仓库批量检查
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+搜索目录: /Users/you/projects
+最大深度: 3
 
-# Git Hook (pre-push)
-#!/bin/bash
-# .git/hooks/pre-push
+找到 5 个仓库
 
-bash scripts/conflict-predictor.sh
-if [ $? -ne 0 ]; then
-    echo "⚠️ 检测到潜在冲突，是否继续推送？(y/n)"
-    read -r response
-    if [ "$response" != "y" ]; then
-        exit 1
-    fi
-fi
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅  project-a                  (main)
+⚠️  project-b                  (dev)                 ↑2
+🔴  project-c                  (feature/auth)        +3
+✅  project-d                  (main)
+⚠️  project-e                  (main)                ↓1
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 检查完成
+
+总计: 5 个仓库
+✅ 已同步: 2
+⚠️  需要同步: 2
+🔴 需要立即处理: 1
+
+建议：
+1. 先处理有未提交修改的仓库
+2. 推送/拉取需要同步的仓库
 ```
 
-## 最佳实践
+图标说明：
+- `✅` - 仓库已同步
+- `⚠️` - 有未推送或未拉取的提交
+- `🔴` - 有未提交的修改
+- `↑N` - N个未推送的提交
+- `↓N` - N个未拉取的提交
+- `+N` - N个未提交的文件
 
-### 1. 建立工作习惯
+#### 3. 检查 .gitignore 配置
+
+检查敏感文件和大文件：
 
 ```bash
-# 每天开始工作前
-开始工作
+bash gitignore-checker.sh
+```
 
-# 每天结束工作后
-准备下班
+**示例输出**：
 
-# 切换任务前
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 .gitignore 配置检查
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ 找到 .gitignore 文件 (45 行)
+
+🔒 检查敏感文件...
+
+⚠️  发现 2 个已跟踪的敏感文件：
+
+  🔴 .env
+  🔴 config/database.yml
+
+清理步骤：
+  # 1. 从 Git 移除（但保留本地文件）
+  git rm --cached ".env"
+  git rm --cached "config/database.yml"
+
+  # 2. 添加到 .gitignore
+  echo ".env" >> .gitignore
+  echo "config/database.yml" >> .gitignore
+
+  # 3. 提交修改
+  git commit -m "chore: 移除敏感文件"
+
+警告：文件仍在 Git 历史中，如需完全清除请使用：
+  git filter-branch 或 BFG Repo-Cleaner
+
+📦 检查大文件 (>5MB)...
+
+⚠️  发现 1 个大文件：
+
+  📦 assets/video.mp4 (12.34MB)
+
+建议：
+  1. 使用 Git LFS 管理大文件：
+     git lfs install
+     git lfs track "*.mp4"
+
+  2. 或将大文件添加到 .gitignore：
+     echo "assets/video.mp4" >> .gitignore
+     git rm --cached assets/video.mp4
+```
+
+## 在 Claude Code 中使用
+
+安装后，你可以在 Claude Code 中通过自然语言调用这些功能：
+
+```
 检查同步状态
 ```
 
-### 2. 项目规范
-
-```bash
-# 统一 .gitignore 配置
-# 1. 检查当前配置
-检查 gitignore
-
-# 2. 应用推荐配置
-# 3. 提交到仓库
-git add .gitignore
-git commit -m "chore: 优化 gitignore 配置"
+```
+我要合并最新代码，会有冲突吗？
 ```
 
-### 3. 团队协作
-
-```bash
-# 合并前检查
-我要合并 feature 分支，会有冲突吗？
-
-# 推送前验证
-准备推送代码，检查一下状态
+```
+检查 ~/projects 下所有仓库
 ```
 
-## 故障排除
-
-### 脚本执行错误
-
-```bash
-# 赋予执行权限
-chmod +x conflict-predictor.sh
-chmod +x batch-checker.sh
-chmod +x gitignore-checker.sh
-
-# 检查依赖
-which git  # 确保 Git 已安装
-git --version  # 确保版本 ≥ 2.0
+```
+检查 gitignore 配置
 ```
 
-### 远程仓库无法访问
+详细的 Claude Code 集成说明请参考 [SKILL.md](SKILL.md)。
 
-```bash
-# 检查远程配置
-git remote -v
+## 工作原理
 
-# 测试连接
-git fetch --dry-run
+### 冲突预测算法
 
-# 重新配置
-git remote set-url origin <new-url>
-```
+脚本使用以下步骤预测潜在冲突：
 
-## 相关资源
+1. 找到本地和远程分支的共同祖先（`git merge-base`）
+2. 列出本地修改的文件（`git diff --name-only BASE HEAD`）
+3. 列出远程修改的文件（`git diff --name-only BASE REMOTE`）
+4. 找出共同修改的文件（两个列表的交集）
+5. 根据共同修改的文件数量判断风险级别：
+   - 0个：低风险，可以安全合并
+   - 1-3个：中等风险，可能需要手动解决冲突
+   - >3个：高风险，很可能遇到冲突
+
+**注意**：这是一个简单的启发式算法，不是精确的冲突预测。即使文件相同，如果修改的代码行不重叠，也不会产生冲突。反之，算法说"无风险"也不能100%保证无冲突。
+
+### 批量检查
+
+脚本使用 `find` 命令搜索指定目录下的所有 `.git` 目录，然后对每个仓库执行：
+
+1. 获取当前分支名
+2. 检查工作区状态（`git status --porcelain`）
+3. 获取远程更新（`git fetch`）
+4. 计算未推送的提交数（`git rev-list --count`）
+5. 计算未拉取的提交数
+6. 检测敏感文件模式
+
+### 敏感文件检测
+
+使用预定义的文件模式列表（如 `\.env$`、`.*\.key$`）检查已被 Git 跟踪的文件。这些模式涵盖常见的敏感文件类型。
+
+## 常见问题
+
+### Q: 冲突预测准确吗？
+
+A: 不是100%准确。脚本只能检测两边是否修改了相同的文件，但无法知道是否修改了相同的代码行。它是一个有用的参考，但不能替代实际的合并测试。
+
+### Q: 批量检查会很慢吗？
+
+A: 对于少量仓库（<20个）通常很快。每个仓库的检查有30秒超时保护。如果有大量仓库，可以通过减少搜索深度来优化。
+
+### Q: 支持哪些平台？
+
+A: macOS 和 Linux。Windows 用户可以在 WSL、Git Bash 或 Cygwin 中使用。
+
+### Q: 需要什么依赖？
+
+A: 只需要 Bash 和 Git。所有脚本都是纯 Shell 实现。
+
+### Q: 脚本会修改我的仓库吗？
+
+A: 不会。所有脚本都是只读的，只检查状态不做修改。唯一的操作是 `git fetch` 获取远程更新（不拉取代码）。
+
+## 项目改进历程
+
+本项目最初存在一些问题：
+
+- ❌ 使用"AI驱动"等误导性宣传
+- ❌ 伪科学的冲突评分算法（魔法数字）
+- ❌ 过于复杂的项目类型检测
+- ❌ 缺乏错误处理
+
+经过重构后：
+
+- ✅ 诚实的功能描述
+- ✅ 基于事实的冲突检测（不评分）
+- ✅ 简化的核心功能
+- ✅ 完善的错误处理和安全性
+- ✅ 代码量减少约40%
+
+详细的改进分析请参考 [IMPROVEMENT_PROPOSAL.md](IMPROVEMENT_PROPOSAL.md)。
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+改进建议：
+- 性能优化
+- 更多的检查功能
+- 更好的跨平台支持
+- 文档改进
+
+## 许可证
+
+MIT License
+
+## 相关链接
 
 - [Git 官方文档](https://git-scm.com/doc)
-- [Git 冲突解决指南](https://git-scm.com/book/en/v2/Git-Tools-Advanced-Merging)
 - [.gitignore 模板](https://github.com/github/gitignore)
+- [gitignore.io](https://gitignore.io) - 生成 .gitignore 文件
+- [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) - 清理 Git 历史
 
-## 技术支持
+## 致谢
 
-如有问题或建议，请：
-1. 查看本文档的常见问题部分
-2. 运行带 `--verbose` 参数获取详细日志
-3. 检查 Git 配置和权限
+感谢所有提供反馈和建议的用户。特别感谢那些指出项目问题并帮助改进的批评者。
